@@ -123,7 +123,7 @@ func main() {
 ## Currencies
 
 The money package has all real-life currencies pre-defined. But you can also
-define a new currency for your realm :) See the go doc to see how the currency
+define a new currency for your realm 😅! See the go doc to see how the currency
 type is like.
 
 ## Contributing
