@@ -61,7 +61,7 @@ import (
 )
 
 func main() {
-  fetchExchangeRatesTable := func() (money.Rates, error) {
+  fetchExchangeRatesTable := func() (money.ExchangeRatesTable, error) {
     var table money.ExchangeRatesTable
     // fetch table from Internet
     return table, nil
@@ -93,8 +93,8 @@ exchange rates table.
     // fetch table from Internet
     return table, nil
   }
-  fileCache := money.RatesFileCache{FilePath: "/tmp/go-money-exchange-rates-table-cache"}
-  bank, _ := money.NewBank(money.AvailableCurrencies, fetchExchangeRatesTable, fileCache)
+  fileCache := money.ExchangeRatesTableFileCache{FilePath: "/tmp/go-money-exchange-rates-table-cache"}
+  bank, _ := money.NewBank(money.AllCurrencies, fetchExchangeRatesTable, fileCache)
   usd, _ := bank.NewMoney(100, "USD")
   eur, _ := usd.ExchangeTo("EUR")
   fmt.Println(eur.Format())
@@ -115,6 +115,9 @@ import "github.com/pioz/money/banks"
 
 func main() {
   bank, err := banks.NewFreecurrencyBank([]money.Currency{money.EUR, money.USD}, "YOUR-API-KEY", nil)
+  if err != nil {
+    panic(err)
+  }
   m, _ := bank.NewMoney(100, "EUR")
 	ex, _ := m.ExchangeTo("USD")
 }
