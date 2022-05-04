@@ -17,7 +17,7 @@ type FetchExchangeRatesTableFunc func() (ExchangeRatesTable, error)
 type Bank struct {
 	// Map by currency ISO code of all currencies supported by the bank
 	Currencies              map[string]Currency
-	exchangeRatesTable      ExchangeRatesTable
+	ExchangeRatesTable      ExchangeRatesTable
 	exchangeRatesTableCache ExchangeRatesTableCache
 	fetchExchangeRatesTable FetchExchangeRatesTableFunc
 }
@@ -35,13 +35,13 @@ var DefaultBank, _ = NewBank(AllCurrencies, nil, nil)
 func NewBank(currencies []Currency, fetch FetchExchangeRatesTableFunc, cache ExchangeRatesTableCache) (*Bank, error) {
 	bank := &Bank{
 		Currencies:              make(map[string]Currency),
-		exchangeRatesTable:      make(ExchangeRatesTable),
+		ExchangeRatesTable:      make(ExchangeRatesTable),
 		exchangeRatesTableCache: cache,
 		fetchExchangeRatesTable: fetch,
 	}
 	for _, fromCurrency := range currencies {
 		bank.Currencies[fromCurrency.IsoCode] = fromCurrency
-		bank.exchangeRatesTable[fromCurrency.IsoCode] = make(ExchangeRates)
+		bank.ExchangeRatesTable[fromCurrency.IsoCode] = make(ExchangeRates)
 	}
 
 	return bank, bank.UpdateExchangeRatesTable()
@@ -55,12 +55,6 @@ func NewBankFromStaticExchangeRatesTable(currencies []Currency, table ExchangeRa
 	}, nil)
 }
 
-// GetExchangeRates returns the exchange rates to convert the currency with ISO
-// code currencyIsoCode to all other supported currencies.
-func (bank *Bank) GetExchangeRates(currencyIsoCode string) ExchangeRates {
-	return bank.exchangeRatesTable[currencyIsoCode]
-}
-
 // GetExchangeRate returns the exchange rate to convert the currency with ISO
 // code fromCurrencyIsoCode to the currency with ISO code toCurrencyIsoCode.
 // Returns an error if the bank does not support one of the two currencies or if
@@ -70,7 +64,7 @@ func (bank *Bank) GetExchangeRate(fromCurrencyIsoCode, toCurrencyIsoCode string)
 	if fromCurrencyIsoCode == toCurrencyIsoCode {
 		return 1.0, nil
 	}
-	exchangeRates := bank.GetExchangeRates(fromCurrencyIsoCode)
+	exchangeRates := bank.ExchangeRatesTable[fromCurrencyIsoCode]
 	rate := exchangeRates[toCurrencyIsoCode]
 	if rate == 0.0 {
 		return 0.0, fmt.Errorf("bank does not support exchange from %s to %s", fromCurrencyIsoCode, toCurrencyIsoCode)
@@ -175,7 +169,7 @@ func (bank *Bank) setExchangeRatesTable(table ExchangeRatesTable) {
 			if !found {
 				continue
 			}
-			bank.exchangeRatesTable[fromCurrency.IsoCode][toCurrency.IsoCode] = rate
+			bank.ExchangeRatesTable[fromCurrency.IsoCode][toCurrency.IsoCode] = rate
 		}
 	}
 	if bank.exchangeRatesTableCache != nil {
